@@ -1,5 +1,7 @@
 
 # You must define the EMSCRIPTEN env var
+EMSCRIPTEN=/s/work/emscripten
+# export EM_CONFIG = /s/wasm-install/emscripten_config_vanilla
 
 CXX = $(EMSCRIPTEN)/emcc
 EMCONFIGURE = $(EMSCRIPTEN)/emconfigure
