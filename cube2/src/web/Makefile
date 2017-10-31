@@ -1,14 +1,14 @@
 
 # You must define the EMSCRIPTEN env var
 EMSCRIPTEN=/s/work/emscripten
-# export EM_CONFIG = /s/wasm-install/emscripten_config_vanilla
+export EM_CONFIG = /s/wasm-install/emscripten_config_vanilla
 
 CXX = $(EMSCRIPTEN)/emcc
 EMCONFIGURE = $(EMSCRIPTEN)/emconfigure
 EMMAKE = $(EMSCRIPTEN)/emmake
 
-CXXFLAGS= -O3 -s USE_ZLIB=1
-override CXXFLAGS+= -Wall -fsigned-char -fno-exceptions -fno-rtti
+CXXFLAGS= -O3 -s USE_ZLIB=1 --profiling-funcs
+override CXXFLAGS+= -Wall -fsigned-char -fno-exceptions -fno-rtti -DEMSCRIPTEN=1
 
 PLATFORM= emscripten
 PLATFORM_PREFIX= native
@@ -419,6 +419,8 @@ CRUNCH_QUALITY = 64
 
 TOTAL_MEMORY = 67108864 # May need to adjust this for very large levels
 
+WASM_ARGS = -s BINARYEN=1 -s BINARYEN_IGNORE_IMPLICIT_TRAPS=0 -s BINARYEN_TRAP_MODE="'clamp'"
+
 client: client.bc
 	cd .. ; cd .. ; python $(EMSCRIPTEN)/tools/file_packager.py base.data --use-preload-plugins  --preload $(BASE_FILES) > game/preload_base.js
 	cd .. ; cd .. ; python $(EMSCRIPTEN)/tools/file_packager.py character.data --use-preload-plugins  --preload $(CHARACTER_FILES) > game/preload_character.js
@@ -427,7 +429,7 @@ client: client.bc
 	#cd .. ; cd .. ; python $(EMSCRIPTEN)/tools/file_packager.py high.data --use-preload-plugins  --preload $(ZOOM_FILES) > game/preload_high.js
 	#cd .. ; cd .. ; python $(EMSCRIPTEN)/tools/file_packager.py four.data --use-preload-plugins  --preload $(CYBER1_FILES) > game/preload_four.js
 	#cd .. ; cd .. ; python $(EMSCRIPTEN)/tools/file_packager.py five.data --use-preload-plugins  --preload $(ZOOMOUT_FILES) > game/preload_five.js
-	cd .. ; cd .. ; $(CXX) $(CXXFLAGS) src/web/client.bc -o bb.html --shell-file mini.html -s DISABLE_EXCEPTION_CATCHING=1 -s EXPORTED_FUNCTIONS="['_main', '__ZN4game18setplayermodelinfoEPKcS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_S1_b', '__Z7executePKc', '__Z10executestrPKc', '_setforcecamera', '_bb_splash', '_bb_playsoundname']" src/web/enet/.libs/libenet.a -s TOTAL_MEMORY=$(TOTAL_MEMORY) -s LEGACY_GL_EMULATION=1 --closure 0 -Os  -s USE_ZLIB=1 -s NO_EXIT_RUNTIME=1 -s BINARYEN=1 -s BINARYEN_IGNORE_IMPLICIT_TRAPS=0 -s BINARYEN_TRAP_MODE="'clamp'"
+	cd .. ; cd .. ; $(CXX) $(CXXFLAGS) src/web/client.bc -o bb.html --shell-file mini.html -s DISABLE_EXCEPTION_CATCHING=1 -s EXPORTED_FUNCTIONS="['_main', '__ZN4game18setplayermodelinfoEPKcS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_S1_b', '__Z7executePKc', '__Z10executestrPKc', '_setforcecamera', '_bb_splash', '_bb_playsoundname']" src/web/enet/.libs/libenet.a -s TOTAL_MEMORY=$(TOTAL_MEMORY) -s LEGACY_GL_EMULATION=1 --closure 0 -Os  -s USE_ZLIB=1 -s NO_EXIT_RUNTIME=1 $(WASM_ARGS)
 
 server.bc:	libenet $(SERVER_OBJS)
 	$(CXX) $(CXXFLAGS) -o server.bc $(SERVER_OBJS) $(SERVER_LIBS)  
